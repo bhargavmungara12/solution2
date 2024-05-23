@@ -4,9 +4,13 @@ import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/router';
 import { calculateDiscountedPrice } from '@/utlities/calculateDiscountPrice';
+import { useMediaQuery } from '@mui/material';
+
 
 function ProductCard({ product }) {
   const router = useRouter()
+  const isSmallScreen = useMediaQuery('(max-width:600px)');
+
 
   function handleCardClick() {
     router.push(`/product/${product.id}`)
@@ -53,7 +57,14 @@ function ProductCard({ product }) {
           </div>
         </div>
         <div className=" flex flex-col justify-center">
-          <h2 className="md:text-2xl md:font-bold font-semibold text-base md:mt-4">{product.title}</h2>
+          <h2 className="md:text-2xl md:font-bold font-semibold text-base md:mt-4 truncate text-ellipsis overflow-hidden capitalize">{isSmallScreen ? (
+            <>
+              {product.title.length > 10 ? product.title.slice(0, 10) + '...' : product.title}
+            </>
+          ) : (
+            product.title
+          )}
+          </h2>
           <h3 className="md:text-xl text-gray-600 mt-2 text-sm font-normal">{product.brand}</h3>
           <p className='flex gap-x-1 items-center font-semibold text-sm mt-2 md:hidden'><img src='./rating_icon.svg' alt='rating' className='w-[16px] h-[16px] md:hidden' /> {product.rating}</p>
           <h3 className="text-[8px] font-normal md:text-xl mt-2"><span className='md:text-[32px] md:font-bold font-semibold text-xl'>

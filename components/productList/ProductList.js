@@ -16,8 +16,8 @@ function ProductList() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [sortBy, setSortBy] = useState('rating');
-  const [sortOrder, setSortOrder] = useState('desc');
+  const [sortBy, setSortBy] = useState('');
+  const [sortOrder, setSortOrder] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('');
@@ -28,6 +28,7 @@ function ProductList() {
   const productsPerPage = 10;
   const pageCount = Math.ceil(totalProducts / productsPerPage);
   const [hoveredPage, setHoveredPage] = useState(null);
+  const [isFilterActive, setIsFilterActive] = useState(false)
 
 
 
@@ -50,6 +51,12 @@ function ProductList() {
     setProducts(filteredItems)
   }, [searchQuery])
 
+  useEffect(() => {
+    if (selectedBrand || selectedCategory || sortBy || sortOrder || searchQuery) {
+      setIsFilterActive(true)
+    }
+  }, [selectedBrand, selectedCategory, sortBy, sortOrder, searchQuery])
+
 
   const handlePageHover = (pageNumber) => {
     setHoveredPage(pageNumber);
@@ -67,14 +74,6 @@ function ProductList() {
       const skip = (page - 1) * productsPerPage;
 
       let url = `https://dummyjson.com/products?limit=${productsPerPage}&skip=${skip}`;
-      const queryParams = [];
-      // if (searchQuery) {
-      //   queryParams.push(`/search?q=${searchQuery.toLowerCase()}`);
-      // }
-
-      // if (queryParams.length > 0) {
-      //   url += `${queryParams.join('&')}`;
-      // }
       const res = await fetch(url);
       if (!res.ok) {
         throw new Error('Failed to fetch product');
@@ -104,9 +103,10 @@ function ProductList() {
   }
 
 
+
   async function fetchCategories() {
     try {
-      const res = await fetch('https://dummyjson.com/products/categories');
+      const res = await fetch(`https://dummyjson.com/products/categories`);
       if (!res.ok) {
         throw new Error('Failed to fetch categories');
       }
@@ -119,15 +119,17 @@ function ProductList() {
   }
 
 
+
   async function fetchBrands() {
     try {
-      const brands = products.map((product) => product.brand);
+      const brands = products?.map((product) => product.brand);
       const uniqueBrands = [...new Set(brands)];
       setBrands(uniqueBrands);
     } catch (err) {
       console.error(err);
     }
   }
+
 
 
   const handleSortChange = (e) => {
@@ -147,12 +149,12 @@ function ProductList() {
   };
 
   const handlePageChange = (e, value) => {
-    setPage(value);
+    setPage(value)
   };
 
 
 
-  const sortedProducts = [...products].sort((a, b) => {
+  const sortedProducts = products && [...products].sort((a, b) => {
     if (sortBy === 'rating') {
       return sortOrder === 'asc' ? a.rating - b.rating : b.rating - a.rating;
     } else if (sortBy === 'price') {
@@ -160,6 +162,7 @@ function ProductList() {
     }
     return 0;
   });
+
 
 
   if (loading) {
@@ -175,7 +178,7 @@ function ProductList() {
   }
 
   if (!products) {
-    return null;
+    return;
   }
 
   const handleSearch = () => {
@@ -214,7 +217,7 @@ function ProductList() {
 
   return (
     <div className=''>
-      <div className="py-4 px-2 bg-grey-350 flex items-center justify-center xs:flex-col md:flex-row">
+      <div className="py-4 px-2  bg-grey-350 flex items-center justify-center xs:flex-col md:flex-row">
         <div className="relative flex w-full items-center ml-4 mb-4 md:mb-0">
           <Image src="./search_icon.svg" alt="search" width={20} height={20} className="absolute left-3" />
           <input
@@ -222,19 +225,19 @@ function ProductList() {
             value={searchQuery}
             onChange={handleInputChange}
             placeholder="Search for product..."
-            className="mr-auto rounded-[20px] bg-grey-450 px-24 pl-10 py-1 outline-none xs:w-full md:w-auto "
+            className="mr-auto rounded-[20px] bg-grey-450 px-24 pl-10 py-1 outline-none w-full md:w-auto"
           />
         </div>
 
-        <div className="flex flex-col space-y-2 items-center">
+        <div className="flex flex-col space-y-2 items-center w-full md:w-auto">
           <div className="flex flex-col w-full xs:space-y-4 md:space-y-0 md:flex-row md:justify-between md:items-center">
 
-            <div className="flex flex-col w-full xs:flex-row xs:justify-center xs:items-center xs:space-x-4 md:flex-row md:justify-center md:items-center md:space-x-4">
+            <div className="flex flex-col w-full xs:flex-row md:flex-row md:justify-center md:items-center md:space-x-2 xs:space-x-2">
               <p className="whitespace-nowrap md:block xs:hidden">Filter By:</p>
               <select
                 value={selectedBrand}
                 onChange={(e) => handleBrandChange(e.target.value)}
-                className="px-4 py-2 rounded-[14px] font-medium text-base w-full xs:w-auto bg-white"
+                className="px-2 py-2 rounded-[14px] font-medium mt-2 md:mt-0 text-base w-full xs:w-[200px] bg-white"
               >
                 <option value="">Select brand</option>
                 {brands?.map((brand) => (
@@ -246,43 +249,47 @@ function ProductList() {
               <select
                 value={selectedCategory}
                 onChange={(e) => handleCategoryChange(e.target.value)}
-                className="px-2 py-2 rounded-[14px] font-medium text-base w-full xs:w-auto bg-white"
+                className="px-2 py-2 rounded-[14px] mt-2 md:mt-0 font-medium text-base w-full xs:w-[200px] bg-white"
               >
                 <option value="">Select Category</option>
                 {categories?.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
+                  <option key={category} value={category.slug}>
+                    {category.slug}
                   </option>
                 ))}
               </select>
             </div>
-            <div className="flex flex-col w-full xs:flex-col xs:gap-x-16 md:flex-row md:justify-center md:items-center md:space-x-2 md:gap-x-2  xs:space-x-4">
+
+            <div className="flex flex-col w-full xs:flex-row md:flex-row md:justify-center md:items-center md:space-x-2 xs:space-x-4"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="border-l-2 border-gray-300 h-6 xs:hidden md:block ml-2"></div>
-
-              <select value={sortBy}
+              <select
+                value={sortBy}
                 onChange={handleSortChange}
-                className="px-2 py-2 rounded-[14px] font-medium text-base w-full xs:w-auto bg-white"
+                className="px-2 py-2 rounded-[14px] mt-2 md:mt-0 font-medium text-base w-full xs:w-[200px] bg-white"
               >
-                <option value='price'>Price</option>
-                <option value='rating'>Rating</option>
+                <option value="">Select SortBy</option>
+                <option value="price">Price</option>
+                <option value="rating">Rating</option>
               </select>
-
               <select
                 value={sortOrder}
                 onChange={handleSortOrderChange}
-                className="px-2 py-2 rounded-[14px] mt-2 md:mt-0 font-medium text-base w-full xs:w-auto  bg-white"
+                className="px-2 py-2 rounded-[14px] mt-2 md:mt-0 font-medium text-base w-full xs:w-[200px] bg-white"
               >
+                <option value="">Select SortOrder</option>
                 <option value="asc">Ascending</option>
                 <option value="desc">Descending</option>
               </select>
-
-              <button onClick={handleSearch} className="px-8 py-2 mt-4 md:mt-0 border border-black-500  rounded-[14px] w-full xs:w-auto">
-                Search
-              </button>
             </div>
+            <button onClick={handleSearch} className="px-8 py-2 mt-4 md:mt-0 border border-black-500 rounded-[14px] w-full xs:w-auto ml-2">
+              Search
+            </button>
           </div>
         </div>
       </div>
+
 
       <div className='w-[96%] mx-auto flex flex-col'>
 
@@ -331,7 +338,7 @@ function ProductList() {
 
 
         <div className='mt-6 mb-8 flex justify-center items-center'>
-          {!searchQuery && (
+          {(!isFilterActive) && (
             <Stack spacing={2}>
               <Pagination
                 count={pageCount}
@@ -343,7 +350,6 @@ function ProductList() {
               />
             </Stack>
           )}
-
         </div>
       </div>
     </div>
