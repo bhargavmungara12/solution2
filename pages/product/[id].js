@@ -53,7 +53,7 @@ function SingleProduct() {
 
 
   return (
-    <div>
+    <div className="">
       <ProductDetails product={product} />
     </div>
   )

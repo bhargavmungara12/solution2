@@ -1,47 +1,85 @@
-
 import React from 'react';
 import { Carousel } from 'react-responsive-carousel';
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { calculateDiscountedPrice } from '@/utlities/calculateDiscountPrice';
+import { useMediaQuery } from '@mui/material';
+import Rating from '@mui/material/Rating';
+import { styled } from '@mui/system';
 
 export default function ProductDetails({ product }) {
+  const router = useRouter();
+  const isSmallScreen = useMediaQuery('(max-width:600px)');
+
+  const carouselStyles = {
+    height: isSmallScreen ? '60vh' : '70vh',
+    display: 'flex',
+    alignItems: 'center',
+  };
+
+  const imgStyles = {
+    width: '100%',
+    height: '90%',
+    objectFit: 'cover',
+  };
+
+  const CustomIcon = styled((props) => (
+    <Image src={props.src} alt="rating icon" width={30} height={20} {...props} />
+  ))(({ theme }) => ({
+    marginTop: '16px',
+    padding: '2px'
+  }));
 
   return (
-    <Card className="w-full max-w-4xl mx-auto  shadow-lg rounded-lg overflow-hidden flex justify-center items-center mt-24">
-      <div className="flex flex-col md:flex-row ">
-        <div className="md:w-1/2">
-          <Carousel infiniteLoop showStatus={false}>
-            {product.images.map((image, index) => (
-              <div key={index}>
-                <img src={image} alt={`Product Image ${index + 1}`} className="w-full h-auto" />
-              </div>
-            ))}
-          </Carousel>
-        </div>
-        <div className="md:w-1/2 p-4">
-          <CardContent>
-            <Typography gutterBottom variant="h2">
-              {product.title}
-            </Typography>
-            <Typography gutterBottom variant="h4">
-              {product.brand}
-            </Typography>
-            <Typography variant="body1" className="mb-4">
-              {product.description}
-            </Typography>
-            <Typography variant="h5" className="mb-4">
-              ${product.price}
-            </Typography>
-            <Typography variant="subtitle1" >
-              {product.rating}
-            </Typography>
+    <>
+      <div className="flex flex-col w-[90%] mx-auto md:w-auto md:mx-0">
+        <button
+          onClick={() => router.back()}
+          className='cursor-pointer flex md:ml-40 md:mt-16 '
+        >
+          <img src="../../back_icon.svg" alt='backicon' /> Products
+        </button>
+        <div className="flex justify-center mt-8 gap-x-6 flex-col md:flex-row md:items-start items-center">
+          <div className="md:w-[40%] w-full bg-secondary rounded-2xl">
+            <div className="w-[90%] mx-auto md:h-[70vh] h-auto">
+              <Carousel infiniteLoop showStatus={false} showArrows={false} showThumbs={!isSmallScreen}>
+                {product.images.map((image, index) => (
+                  <div key={index} style={carouselStyles}>
+                    <img src={image} alt={`Product Image ${index + 1}`} style={imgStyles} className='rounded-xl' />
+                  </div>
+                ))}
+              </Carousel>
+            </div>
+          </div>
 
-          </CardContent>
+          <div className="w-full md:w-auto md:mx-0">
+            <h2 className="md:text-[32px] font-semibold xs:text-xl md:mt-0 xs:mt-3">{product.title}</h2>
+            <p className="md:text-2xl font-normal xs:text-xl">{product.brand}</p>
+            <div className='flex items-center gap-x-2 flex-row'>
+
+              <Rating
+                value={product.rating}
+                readOnly
+                icon={<CustomIcon src="../../rating_icon.svg" />}
+                emptyIcon={<CustomIcon src="../../empty_rating_icon.svg" />}
+              />
+              <p className='mt-3'>{product.rating}</p>
+            </div>
+
+            <h3 className="mt-4">
+              <span className="text-[32px] font-bold">
+                ${calculateDiscountedPrice(product.price, product.discountPercentage)}
+              </span>
+              {' '} M.R.P: <s>${product.price}</s> ({product.discountPercentage}% off)
+            </h3>
+            <p className="font-medium text-base w-full md:w-[500px] mt-6">{product.description}</p>
+          </div>
         </div>
       </div>
-    </Card>
+    </>
   );
-};
-
+}

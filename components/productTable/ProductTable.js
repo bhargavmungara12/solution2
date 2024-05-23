@@ -22,10 +22,12 @@ function ProductTable({ products }) {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              {!isSmallScreen && <TableCell>Description</TableCell>}
-              <TableCell>Brand</TableCell>
-              <TableCell>Price</TableCell>
+              <TableCell className='text-center text-base'>Name of the Product</TableCell>
+              {!isSmallScreen && <TableCell className='text-center text-base'>Description</TableCell>}
+              <TableCell className='text-center text-base'>Category</TableCell>
+              <TableCell className='text-center text-base'>Brand</TableCell>
+              <TableCell className='text-center text-base'>Rating</TableCell>
+              <TableCell className='text-center text-base'>Price</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -34,10 +36,12 @@ function ProductTable({ products }) {
                 onClick={() => router.push(`/product/${product.id}`)}
                 className='cursor-pointer'
               >
-                <TableCell>{product.title}</TableCell>
-                {!isSmallScreen && <TableCell>{product.description}</TableCell>}
-                <TableCell>{product.brand}</TableCell>
-                <TableCell>${product.price}</TableCell>
+                <TableCell className='w-[270px] text-center font-medium text-base'>{product.title}</TableCell>
+                {!isSmallScreen && <TableCell className='text-pretty max-w-[400px] font-medium text-base'>{product.description}</TableCell>}
+                <TableCell className='text-center w-[170px] font-medium text-base'>{product.category}</TableCell>
+                <TableCell className='text-center w-[170px] font-medium text-base'>{product.brand}</TableCell>
+                <TableCell className='text-center w-[170px] font-medium text-base'>{product.rating}</TableCell>
+                <TableCell className='text-center w-[170px] font-medium text-base'>${product.price}</TableCell>
               </TableRow>
             ))}
           </TableBody>
